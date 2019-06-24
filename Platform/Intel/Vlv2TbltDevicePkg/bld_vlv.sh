@@ -7,7 +7,7 @@ function Usage() {
   echo "***************************************************************************"
   echo "Build BIOS rom for VLV platforms."
   echo
-  echo "Usage: bld_vlv.bat  PlatformType [Build Target]"
+  echo "Usage: bld_vlv.sh  PlatformType [Build Target]"
   echo
   echo
   echo "       Platform Types:  MNW2"
@@ -19,43 +19,51 @@ function Usage() {
   exit 0
 }
 
+set -e
 
+cd ..
 echo -e $(date)
 ##**********************************************************************
 ## Initial Setup
 ##**********************************************************************
-#WORKSPACE=$(pwd)
+export WORKSPACE=$(pwd)
 #build_threads=($NUMBER_OF_PROCESSORS)+1
 Build_Flags=
 exitCode=0
 Arch=X64
 SpiLock=0
 
+export CORE_PATH=$WORKSPACE/edk2
+export PLATFORM_PATH=$WORKSPACE/edk2-platforms/Platform/Intel/
+export SILICON_PATH=$WORKSPACE/edk2-platforms/Silicon/Intel/
+export BINARY_PATH=$WORKSPACE/Vlv2Binaries/
+export PACKAGES_PATH=$PLATFORM_PATH:$SILICON_PATH:$BINARY_PATH:$CORE_PATH
+cd ./edk2
+
 ## Clean up previous build files.
-if [ -e $(pwd)/EDK2.log ]; then
-  rm $(pwd)/EDK2.log
+if [ -e $CORE_PATH/EDK2.log ]; then
+  rm $CORE_PATH/EDK2.log
 fi
 
-if [ -e $(pwd)/Unitool.log ]; then
-  rm $(pwd)/Unitool.log
+if [ -e $CORE_PATH/Unitool.log ]; then
+  rm $CORE_PATH/Unitool.log
 fi
 
-if [ -e $(pwd)/Conf/target.txt ]; then
-  rm $(pwd)/Conf/target.txt
+if [ -e $CORE_PATH/Conf/target.txt ]; then
+  rm $CORE_PATH/Conf/target.txt
 fi
 
-if [ -e $(pwd)/Conf/BiosId.env ]; then
-  rm $(pwd)/Conf/BiosId.env
+if [ -e $CORE_PATH/Conf/BiosId.env ]; then
+  rm $CORE_PATH/Conf/BiosId.env
 fi
 
-if [ -e $(pwd)/Conf/tools_def.txt ]; then
-  rm $(pwd)/Conf/tools_def.txt
+if [ -e $CORE_PATH/Conf/tools_def.txt ]; then
+  rm $CORE_PATH/Conf/tools_def.txt
 fi
 
-if [ -e $(pwd)/Conf/build_rule.txt ]; then
-  rm $(pwd)/Conf/build_rule.txt
+if [ -e $CORE_PATH/Conf/build_rule.txt ]; then
+  rm $CORE_PATH/Conf/build_rule.txt
 fi
-
 
 ## Setup EDK environment. Edksetup puts new copies of target.txt, tools_def.txt, build_rule.txt in WorkSpace\Conf
 ## Also run edksetup as soon as possible to avoid it from changing environment variables we're overriding
@@ -64,8 +72,9 @@ make -C BaseTools
 
 ## Define platform specific environment variables.
 PLATFORM_PACKAGE=Vlv2TbltDevicePkg
-config_file=$WORKSPACE/$PLATFORM_PACKAGE/PlatformPkgConfig.dsc
-auto_config_inc=$WORKSPACE/$PLATFORM_PACKAGE/AutoPlatformCFG.txt
+PLATFORM_PKG_PATH=$PLATFORM_PATH/$PLATFORM_PACKAGE
+config_file=$PLATFORM_PKG_PATH/PlatformPkgConfig.dsc
+auto_config_inc=$PLATFORM_PKG_PATH/AutoPlatformCFG.txt
 
 ## create new AutoPlatformCFG.txt file
 if [ -f "$auto_config_inc" ]; then
@@ -106,9 +115,6 @@ for (( i=1; i<=$#; ))
   done
 
 
-
-
-
 ## Required argument(s)
 if [ "$2" == "" ]; then
   Usage
@@ -116,10 +122,10 @@ fi
 
 ## Remove the values for Platform_Type and Build_Target from BiosIdX.env and stage in Conf
 if [ $Arch == "IA32" ]; then
-  cp $PLATFORM_PACKAGE/BiosIdR.env    Conf/BiosId.env
+  cp $PLATFORM_PKG_PATH/BiosIdR.env Conf/BiosId.env
   echo DEFINE X64_CONFIG = FALSE      >> $auto_config_inc
 else
-  cp $PLATFORM_PACKAGE/BiosIdx64R.env  Conf/BiosId.env
+  cp $PLATFORM_PKG_PATH/BiosIdx64R.env Conf/BiosId.env
   echo DEFINE X64_CONFIG = TRUE       >> $auto_config_inc
 fi
 sed -i '/^BOARD_ID/d' Conf/BiosId.env
@@ -146,11 +152,11 @@ fi
 Platform_Type=$1
 
 if [ "$(echo $2 | tr 'a-z' 'A-Z')" == "RELEASE" ]; then
-  TARGET=RELEASE
+  export TARGET=RELEASE
   BUILD_TYPE=R
   echo BUILD_TYPE = R >> Conf/BiosId.env
 else
-  TARGET=DEBUG
+  export TARGET=DEBUG
   BUILD_TYPE=D
   echo BUILD_TYPE = D >> Conf/BiosId.env
 fi
@@ -161,7 +167,7 @@ fi
 ##**********************************************************************
 echo "Ensuring correct build directory is present for GenBiosId..."
 
-echo Modifing Conf files for this build...
+echo Modifying Conf files for this build...
 ## Remove lines with these tags from target.txt
 sed -i '/^ACTIVE_PLATFORM/d' Conf/target.txt
 sed -i '/^TARGET /d' Conf/target.txt
@@ -186,8 +192,8 @@ case $gcc_version in
         ;;
 esac
 
-ACTIVE_PLATFORM=$PLATFORM_PACKAGE/PlatformPkgGcc"$Arch".dsc
-TOOL_CHAIN_TAG=$TARGET_TOOLS
+ACTIVE_PLATFORM=$PLATFORM_PKG_PATH/PlatformPkgGcc"$Arch".dsc
+export TOOL_CHAIN_TAG=$TARGET_TOOLS
 MAX_CONCURRENT_THREAD_NUMBER=1
 echo ACTIVE_PLATFORM = $ACTIVE_PLATFORM                           >> Conf/target.txt
 echo TARGET          = $TARGET                                    >> Conf/target.txt
@@ -205,24 +211,24 @@ fi
 echo Skip "Running UniTool..."
 echo "Make GenBiosId Tool..."
 BUILD_PATH=Build/$PLATFORM_PACKAGE/"$TARGET"_"$TOOL_CHAIN_TAG"
-if [ ! -d "$BUILD_PATH/$Arch" ]; then
-  mkdir -p $BUILD_PATH/$Arch
+if [ ! -d "$WORKSPACE/$BUILD_PATH/$Arch" ]; then
+  mkdir -p $WORKSPACE/$BUILD_PATH/$Arch
 fi
-if [ -e "$BUILD_PATH/$Arch/BiosId.bin" ]; then
-  rm -f $BUILD_PATH/$Arch/BiosId.bin
+if [ -e "$WORKSPACE/$BUILD_PATH/$Arch/BiosId.bin" ]; then
+  rm -f $WORKSPACE/$BUILD_PATH/$Arch/BiosId.bin
 fi
 
 
-./$PLATFORM_PACKAGE/GenBiosId -i Conf/BiosId.env -o $BUILD_PATH/$Arch/BiosId.bin
+$PLATFORM_PKG_PATH/GenBiosId -i $CORE_PATH/Conf/BiosId.env -o $WORKSPACE/$BUILD_PATH/$Arch/BiosId.bin
 
 
 echo "Invoking EDK2 build..."
 build
 
 if [ $SpiLock == "1" ]; then
-  IFWI_HEADER_FILE=./$PLATFORM_PACKAGE/Stitch/IFWIHeader/IFWI_HEADER_SPILOCK.bin
+  IFWI_HEADER_FILE=$PLATFORM_PKG_PATH/Stitch/IFWIHeader/IFWI_HEADER_SPILOCK.bin
 else
-  IFWI_HEADER_FILE=./$PLATFORM_PACKAGE/Stitch/IFWIHeader/IFWI_HEADER.bin
+  IFWI_HEADER_FILE=$PLATFORM_PKG_PATH/Stitch/IFWIHeader/IFWI_HEADER.bin
 fi
 
 echo $IFWI_HEADER_FILE
@@ -241,8 +247,16 @@ VERSION_MINOR=$(grep '^VERSION_MINOR' Conf/BiosId.env | cut -d ' ' -f 3 | cut -c
 BOARD_ID=$(grep '^BOARD_ID' Conf/BiosId.env | cut -d ' ' -f 3 | cut -c 1-7)
 BIOS_Name="$BOARD_ID"_"$Arch"_"$BUILD_TYPE"_"$VERSION_MAJOR"_"$VERSION_MINOR".ROM
 BIOS_ID="$BOARD_ID"_"$Arch"_"$BUILD_TYPE"_"$VERSION_MAJOR"_"$VERSION_MINOR"_GCC.bin
+cp -f $WORKSPACE/$BUILD_PATH/FV/VLV.fd  $WORKSPACE/$BIOS_Name
+cp -f $WORKSPACE/$BUILD_PATH/FV/VLV.fd  $WORKSPACE/$BUILD_PATH/FV/Vlv.ROM
+
+echo > $WORKSPACE/$BUILD_PATH/FV/SYSTEMFIRMWAREUPDATECARGO.Fv
+build -p $PLATFORM_PKG_PATH/PlatformCapsuleGcc.dsc
 SEC_VERSION=1.0.2.1060v5
-cat $IFWI_HEADER_FILE ../Vlv2Binaries/Vlv2SocBinPkg/SEC/$SEC_VERSION/VLV_SEC_REGION.bin ../Vlv2Binaries/Vlv2SocBinPkg/SEC/$SEC_VERSION/Vacant.bin $BUILD_PATH/FV/VLV.fd > ./$PLATFORM_PACKAGE/Stitch/$BIOS_ID
+cat $IFWI_HEADER_FILE \
+    $BINARY_PATH/Vlv2SocBinPkg/SEC/$SEC_VERSION/VLV_SEC_REGION.bin \
+    $BINARY_PATH/Vlv2SocBinPkg/SEC/$SEC_VERSION/Vacant.bin \
+    $WORKSPACE/$BUILD_PATH/FV/VLV.fd > $PLATFORM_PKG_PATH/Stitch/$BIOS_ID
 
 
 echo Skip "Running BIOS_Signing ..."
