@@ -67,9 +67,6 @@ PLATFORM_PACKAGE=Vlv2TbltDevicePkg
 config_file=$WORKSPACE/$PLATFORM_PACKAGE/PlatformPkgConfig.dsc
 auto_config_inc=$WORKSPACE/$PLATFORM_PACKAGE/AutoPlatformCFG.txt
 
-## default ECP (override with /ECP flag)
-EDK_SOURCE=$WORKSPACE/EdkCompatibilityPkg
-
 ## create new AutoPlatformCFG.txt file
 if [ -f "$auto_config_inc" ]; then
   rm $auto_config_inc
@@ -96,11 +93,6 @@ for (( i=1; i<=$#; ))
       if [ -d "Build" ]; then
         rm -r Build
       fi
-      shift
-    elif [ "$(echo $1 | tr 'a-z' 'A-Z')" == "/ECP" ]; then
-      ECP_SOURCE=$WORKSPACE/EdkCompatibilityPkgEcp
-      EDK_SOURCE=$WORKSPACE/EdkCompatibilityPkgEcp
-      echo DEFINE ECP_BUILD_ENABLE = TRUE >> $auto_config_inc
       shift
     elif [ "$(echo $1 | tr 'a-z' 'A-Z')" == "/X64" ]; then
       Arch=X64

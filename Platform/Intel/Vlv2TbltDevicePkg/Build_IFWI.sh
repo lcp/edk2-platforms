@@ -44,9 +44,6 @@ for (( i=1; i<=$#; ))
     elif [ "$(echo $1 | tr 'a-z' 'A-Z')" == "/C" ]; then
       Build_Flags="$Build_Flags /c"
       shift
-    elif [ "$(echo $1 | tr 'a-z' 'A-Z')" == "/ECP" ]; then
-      Build_Flags="$Build_Flags /ecp"
-      shift
     elif [ "$(echo $1 | tr 'a-z' 'A-Z')" == "/X64" ]; then
       Arch=X64
       Build_Flags="$Build_Flags /x64"
