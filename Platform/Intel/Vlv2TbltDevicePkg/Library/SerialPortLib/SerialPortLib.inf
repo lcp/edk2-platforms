@@ -25,7 +25,9 @@
 #
 
 [Sources]
+  PlatformSerialPortLib.h
   SerialPortLib.c
+  SioInit.h
   SioInit.c
 
 [Packages]
