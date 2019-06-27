@@ -569,6 +569,7 @@
 
 !if $(SECURE_BOOT_ENABLE) == TRUE
   gEfiMdeModulePkgTokenSpaceGuid.PcdMaxVariableSize|0x22000
+  gEfiSecurityPkgTokenSpaceGuid.PcdUserPhysicalPresence|TRUE
 !else
   gEfiMdeModulePkgTokenSpaceGuid.PcdMaxVariableSize|0x4000
 !endif
