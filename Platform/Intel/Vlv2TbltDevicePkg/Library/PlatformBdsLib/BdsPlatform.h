@@ -512,5 +512,5 @@ extern UINT32     mSetupTextModeColumn         ;
 extern UINT32     mSetupTextModeRow            ;
 extern UINT32     mSetupHorizontalResolution   ;
 extern UINT32     mSetupVerticalResolution     ;
-extern EFI_STATUS BdsSetConsoleMode (BOOLEAN);
+extern EFI_STATUS EFIAPI BdsSetConsoleMode (BOOLEAN);
 #endif // _BDS_PLATFORM_H
