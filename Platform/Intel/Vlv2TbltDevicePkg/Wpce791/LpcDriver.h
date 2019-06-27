@@ -28,10 +28,10 @@ Abstract:
 #include "Protocol/PciIo.h"
 #include "Protocol/DriverBinding.h"
 #include "Library/UefiBootServicesTableLib.h"
-#include "IsaAcpiDxe/PcatIsaAcpi.h"
 #include "IndustryStandard/Pci22.h"
 #include "Protocol/LpcWpce791Policy.h"
 
+#include <Library/UefiLib.h>
 #include <Library/DebugLib.h>
 
 #define ICH_LPC_BRIDGE_BUS_DEV_FUNC 0x1F0000
