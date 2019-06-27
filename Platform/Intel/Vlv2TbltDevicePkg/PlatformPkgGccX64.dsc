@@ -32,11 +32,6 @@
   BUILD_TARGETS                       = DEBUG|RELEASE
   SKUID_IDENTIFIER                    = DEFAULT
 
-  DEFINE CPU_ARCH                 =ValleyView2
-  DEFINE PROJECT_SC_FAMILY        =IntelPch
-  DEFINE PROJECT_SC_ROOT          =../$(PLATFORM_RC_PACKAGE)/ValleyView2Soc/SouthCluster
-  DEFINE PROJECT_VLV_ROOT          =../$(PLATFORM_RC_PACKAGE)/ValleyView2Soc/NorthCluster
-
   DEFINE RC_BINARY_RELEASE        = TRUE
   #
   # Platform On/Off features are defined here
