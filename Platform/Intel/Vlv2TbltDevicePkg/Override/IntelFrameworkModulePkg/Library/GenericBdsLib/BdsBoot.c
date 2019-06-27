@@ -22,7 +22,7 @@ EFI_HII_HANDLE gBdsLibStringPackHandle = NULL;
   @param  Context               Context for this event.
 
 **/
-VOID
+STATIC VOID
 EFIAPI
 BmEndOfBdsPerfCode (
   IN EFI_EVENT  Event,
